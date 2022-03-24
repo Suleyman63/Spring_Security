@@ -1,12 +1,10 @@
 package com.example.demo.servie;
-
 import com.example.demo.model.Kisi;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.swing.event.ListDataEvent;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,52 +12,53 @@ import java.util.stream.Collectors;
 public class KisiServiceImp implements UserDetails {
 
     private static final long serialVersionUID=1L;
-
     private Long id;
     private String username;
     private String email;
-    @JsonIgnore
+    @JsonIgnore  // Password bilgisini json dosyasına saklamamasi için koyulan anotasyon
     private String password;
-    private Collection<? extends GrantedAuthority> authorities;
 
+    private Collection<? extends GrantedAuthority> otoriteler;
+
+    // Constructor
     public KisiServiceImp(Long id, String username, String email, String password,
-                          Collection<? extends GrantedAuthority> authorities) {
+                           Collection<? extends GrantedAuthority> otoriteler) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
-        this.authorities = authorities;
+        this.otoriteler = otoriteler;
     }
 
-    public static KisiServiceImp kisiOlustur(Kisi kisi){
-        List<GrantedAuthority> otoriteler = kisi.getRoller().stream().map(role ->
-            new SimpleGrantedAuthority(role.getName().name())
-        ).collect(Collectors.toList());
+    public static KisiServiceImp kisiOlustur(Kisi kisi) {
+        List<GrantedAuthority> otoriteler = kisi.getRoller().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
 
-        return new KisiServiceImp(kisi.getId(),
+        return new KisiServiceImp(
+                kisi.getId(),
                 kisi.getUsername(),
                 kisi.getEmail(),
                 kisi.getPassword(),
                 otoriteler);
     }
 
+    public Long getId(){
+        return id;
+    }
+
+    public String getEmail(){
+        return email;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return otoriteler;
     }
 
     @Override
     public String getPassword() {
         return password;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     @Override

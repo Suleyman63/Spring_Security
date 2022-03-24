@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
 
+
 import com.example.demo.security.jwt.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,17 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfigration extends WebSecurityConfigurerAdapter {
 
-    // password encoder
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // login autentication
     @Bean
     @Override
-    protected AuthenticationManager authenticationManager() throws Exception{
-        return super.authenticationManager();
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
     @Bean
@@ -37,23 +36,19 @@ public class SecurityConfigration extends WebSecurityConfigurerAdapter {
         return new JwtAuthFilter();
     }
 
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
-        http.csrf().disable()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
-                .antMatchers("/api/test/**")
-                .permitAll()
-                .antMatchers("/api/auth/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic();
+        http.
+                cors().  // Cross Origine Resource Sharing (UI  ve Backend arasında çarpaz iletişim için gereklidir.)
+                and().
+                csrf().disable().
+                sessionManagement().
+                sessionCreationPolicy(SessionCreationPolicy.STATELESS).  // JSW oturumunun durumsuz olduğunu belirtiriz.
+                and().
+                authorizeRequests().
+                antMatchers("/api/test/**").permitAll().
+                antMatchers("/api/auth/**").permitAll().
+                anyRequest().authenticated().and().httpBasic();
 
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }

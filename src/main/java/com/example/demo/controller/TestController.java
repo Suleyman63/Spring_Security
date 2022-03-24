@@ -11,7 +11,7 @@ public class TestController {
 
     @GetMapping("/all")
     public String allAccess(){
-        return "herkese acik icerik";
+        return "Herkese açık içerik";
     }
 
     @GetMapping("/user")

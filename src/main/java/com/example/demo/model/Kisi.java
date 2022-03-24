@@ -24,12 +24,12 @@ public class Kisi {
     private Long id;
 
     @NotBlank
-    @Size(min = 6, max = 30)
+    @Size(min = 4, max = 30)
     private String username;
 
 
     @NotBlank
-    @Size(min = 6, max = 50)
+    @Size(min = 4, max = 50)
     private String password;
 
     @NotBlank

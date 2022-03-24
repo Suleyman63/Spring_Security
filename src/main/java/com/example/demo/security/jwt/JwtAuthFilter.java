@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,20 +19,21 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
-    JwtUtil jwtUtil;
+    JwtUtil jwtUtils;
 
     @Autowired
     KisiService kisiService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
+
             String jwt = jwtAl(request);
-            if (jwt != null && jwtUtil.JwtTokenGecerle(jwt)){
-                String username = jwtUtil.usernameAl(jwt);
+
+            if( jwt != null && jwtUtils.JwtTokenGecerle(jwt)) {
+                String username = jwtUtils.usernameAl(jwt);
+
                 UserDetails kisiDetaylar = kisiService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         kisiDetaylar, null, kisiDetaylar.getAuthorities());
@@ -40,16 +42,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        }catch (Exception e){
-            System.out.println("kimlik denetim hatasi" + e.getMessage());
+        }catch(Exception e){
+            System.out.println("Kimlik denetimi gerçekleştirilemedi." + e.getMessage());
         }
-        filterChain.doFilter(request, response);
+
+        filterChain.doFilter(request,response);
     }
+
 
     public String jwtAl(HttpServletRequest request){
         String headerAuth = request.getHeader("Authorization");
-
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer")){
+        if(StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             return headerAuth.substring(7, headerAuth.length());
         }
         return null;

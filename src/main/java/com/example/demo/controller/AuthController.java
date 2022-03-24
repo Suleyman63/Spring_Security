@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 
-
 import com.example.demo.model.ERoller;
 import com.example.demo.model.Kisi;
 import com.example.demo.model.KisiRole;
@@ -38,10 +37,10 @@ public class AuthController {
     KisiRepository kisiRepository;
 
     @Autowired
-    RoleRepository roleRepository;
+    PasswordEncoder passwordEncoder;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -56,10 +55,8 @@ public class AuthController {
                 authenticate( new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                         loginRequest.getPassword()));
 
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.JwtOlustur(authentication);
-
 
         KisiServiceImp loginKisi = (KisiServiceImp) authentication.getPrincipal();
 
@@ -76,30 +73,31 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> kayitOl(@RequestBody RegisterRequest registerRequest){
-
-        if (kisiRepository.existsByUsername(registerRequest.getUsername())){
-            return ResponseEntity.badRequest().body(new MesajResponse("error username is exist"));
+    public ResponseEntity<?> kayitOl(@RequestBody RegisterRequest registerRequest) {
+        if (kisiRepository.existsByUsername(registerRequest.getUsername())) {
+            return ResponseEntity
+                    .badRequest().
+                    body(new MesajResponse("Hata: username kullaniliyor"));
+        }
+        if (kisiRepository.existsByEmail(registerRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest().
+                    body(new MesajResponse("Hata: email kullaniliyor"));
         }
 
-        if (kisiRepository.existsByEmail(registerRequest.getEmail())){
-            return ResponseEntity.badRequest().body(new MesajResponse("error email is exist"));
-        }
 
-
-        Kisi kisi = new Kisi(
-                registerRequest.getUsername(),
+        Kisi kisi = new Kisi(registerRequest.getUsername(),
                 passwordEncoder.encode(registerRequest.getPassword()),
                 registerRequest.getEmail());
 
-        Set<String> stringRoller = registerRequest.getRoller();
+        Set<String> stringRoller = registerRequest.getRole();
         Set<KisiRole> roller = new HashSet<>();
 
-        if (stringRoller == null){
+        if (stringRoller == null) {
             KisiRole userRole = roleRepository.findByName(ERoller.ROLE_USER).
-                    orElseThrow(()->new RuntimeException("hata : veritabaninda role kayitli degil"));
+                    orElseThrow(() -> new RuntimeException("hata: Veritabaninda Role kayitli değil"));
             roller.add(userRole);
-        }else {
+        } else {
             stringRoller.forEach(role -> {
                 switch (role) {
                     case "admin":
@@ -124,6 +122,5 @@ public class AuthController {
 
         }
         return ResponseEntity.ok(new MesajResponse("Kullanıcı başarıyla kaydedildi."));
-
     }
 }
